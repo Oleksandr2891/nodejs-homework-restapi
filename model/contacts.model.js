@@ -1,64 +1,85 @@
-const uuid = require("uuid");
-const fs = require("fs/promises");
-const contacts = require("./contacts.json");
+// const uuid = require("uuid");
+const mongoose = require("mongoose");
+// const fs = require("fs/promises");
+// const contacts = require("./contacts.json");
 
-class ContactsModel {
-  findByEmail(email) {
-    return contacts.find((contact) => contact.email === email);
-  }
+const { Schema } = mongoose;
 
-  findByPhone(phone) {
-    return contacts.find((contact) => contact.phone === phone);
-  }
+const ContactSchema = new Schema({
+  name: {
+    type: String,
+    required: [true, "Set name for contact"],
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  favorite: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-  listContacts() {
-    return contacts;
-  }
+const Contact = mongoose.model("Contact", ContactSchema);
+module.exports = Contact;
 
-  getContactById(contactId) {
-    const contact = contacts.find(
-      (contact) => String(contact.id) === contactId
-    );
-    return contact;
-  }
+// class ContactsModel {
+//   findByEmail(email) {
+//     return contacts.find((contact) => contact.email === email);
+//   }
 
-  addContact(createParams) {
-    const newContact = {
-      ...createParams,
-      id: uuid.v4(),
-    };
+//   findByPhone(phone) {
+//     return contacts.find((contact) => contact.phone === phone);
+//   }
 
-    contacts.push(newContact);
-    return newContact;
-  }
+//   listContacts() {
+//     return contacts;
+//   }
 
-  removeContact(contactId) {
-    const contactIndex = contacts.findIndex(
-      (contact) => String(contact.id) === contactId
-    );
-    if (contactIndex === -1) {
-      return null;
-    }
-    const [deletedContact] = contacts.splice(contactIndex, 1);
-    return deletedContact;
-  }
+//   getContactById(contactId) {
+//     const contact = contacts.find(
+//       (contact) => String(contact.id) === contactId
+//     );
+//     return contact;
+//   }
 
-  updateContact = (contactId, updateParams) => {
-    const contactIndex = contacts.findIndex(
-      (contact) => String(contact.id) === contactId
-    );
-    if (contactIndex === -1) {
-      return null;
-    }
-    contacts[contactIndex] = {
-      ...contacts[contactIndex],
-      ...updateParams,
-      id: uuid.v4(),
-    };
-    return contacts[contactIndex];
-  };
-}
+//   addContact(createParams) {
+//     const newContact = {
+//       ...createParams,
+//       id: uuid.v4(),
+//     };
 
-module.exports = new ContactsModel();
+//     contacts.push(newContact);
+//     return newContact;
+//   }
 
-// const updateContact = async (contactId, body) => {}
+//   removeContact(contactId) {
+//     const contactIndex = contacts.findIndex(
+//       (contact) => String(contact.id) === contactId
+//     );
+//     if (contactIndex === -1) {
+//       return null;
+//     }
+//     const [deletedContact] = contacts.splice(contactIndex, 1);
+//     return deletedContact;
+//   }
+
+//   updateContact = (contactId, updateParams) => {
+//     const contactIndex = contacts.findIndex(
+//       (contact) => String(contact.id) === contactId
+//     );
+//     if (contactIndex === -1) {
+//       return null;
+//     }
+//     contacts[contactIndex] = {
+//       ...contacts[contactIndex],
+//       ...updateParams,
+//       id: uuid.v4(),
+//     };
+//     return contacts[contactIndex];
+//   };
+// }
+
+// module.exports = new ContactsModel();

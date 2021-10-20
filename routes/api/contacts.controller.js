@@ -4,14 +4,16 @@ const { validate } = require("../../helpers/validate");
 const {
   createContactSchema,
   updateContactSchema,
+  updateStatrusContactSchema,
 } = require("../../model/contacts.schema");
 const { contactsService } = require("../../model/contacts.service");
 
 createContactSchema.validate({}, { stripUnknown: true }); //delete unknown elements
+updateStatrusContactSchema.validate({}, { stripUnknown: true }); //delete unknown elements
 
 router.get("/", async (req, res, next) => {
   try {
-    const contacts = contactsService.getContacts();
+    const contacts = await contactsService.getContacts();
     return res.status(200).send(contacts);
   } catch (error) {
     next(error);
@@ -20,7 +22,7 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:contactId", async (req, res, next) => {
   try {
-    const contact = contactsService.getContactById(req.params.contactId);
+    const contact = await contactsService.getContactById(req.params.contactId);
 
     return res.status(200).send(contact);
   } catch (error) {
@@ -30,7 +32,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", validate(createContactSchema), async (req, res, next) => {
   try {
-    const newContact = contactsService.createContact(req.body);
+    const newContact = await contactsService.createContact(req.body);
     return res.status(201).send(newContact);
   } catch (err) {
     next(err);
@@ -39,7 +41,7 @@ router.post("/", validate(createContactSchema), async (req, res, next) => {
 
 router.delete("/:contactId", async (req, res, next) => {
   try {
-    contactsService.removeContact(req.params.contactId);
+    await contactsService.removeContact(req.params.contactId);
 
     return res.status(200).send({ message: "contact deleted" });
   } catch (err) {
@@ -52,11 +54,27 @@ router.put(
   validate(updateContactSchema),
   async (req, res, next) => {
     try {
-      const updateContact = contactsService.updateContact(
+      const updateContact = await contactsService.updateContact(
         req.params.contactId,
         req.body
       );
       return res.status(200).send(updateContact);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.patch(
+  "/:contactId/favorite",
+  validate(updateStatrusContactSchema),
+  async (req, res, next) => {
+    try {
+      const updateStatusContact = await contactsService.updateStatusContact(
+        req.params.contactId,
+        req.body
+      );
+      return res.status(200).send(updateStatusContact);
     } catch (err) {
       next(err);
     }
