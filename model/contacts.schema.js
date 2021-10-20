@@ -11,3 +11,10 @@ exports.updateContactSchema = Joi.object({
   email: Joi.string().email(),
   phone: Joi.string(),
 });
+
+exports.updateStatrusContactSchema = Joi.object(
+  {
+    favorite: Joi.boolean(),
+  },
+  { stripUnknown: true }
+);

@@ -5,9 +5,12 @@ const path = require("path");
 const cors = require("cors");
 const app = require("../app");
 const contactsRouter = require("../routes/api/contacts.controller");
+const mongoose = require("mongoose");
 
 const PORT = process.env.PORT || 4040;
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
+
+dotenv.config();
 
 class Server {
   constructor() {
@@ -16,6 +19,7 @@ class Server {
   async start() {
     this.server = app;
     this.initMiddlewares();
+    this.connectToDb();
     this.initRoutes();
     this.listen();
     this.initErrorHandling();
@@ -44,6 +48,16 @@ class Server {
         message: err.message,
       });
     });
+  }
+
+  async connectToDb() {
+    try {
+      await mongoose.connect(process.env.MONGO_URL);
+      console.log("Database connection successful");
+    } catch (err) {
+      console.log("Database connection error", err);
+      process.exit(1);
+    }
   }
 
   listen() {
