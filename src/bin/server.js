@@ -3,11 +3,12 @@ const logger = require("morgan");
 const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
-const app = require("../app");
+const app = require("../../app");
 const contactsRouter = require("../routes/api/contacts.controller");
+const authRouter = require("../routes/api/users.controller");
 const mongoose = require("mongoose");
+const { getConfig } = require("../../config");
 
-const PORT = process.env.PORT || 4040;
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 dotenv.config();
@@ -18,11 +19,16 @@ class Server {
   }
   async start() {
     this.server = app;
+    this.initConfig();
     this.initMiddlewares();
     this.connectToDb();
     this.initRoutes();
     this.listen();
     this.initErrorHandling();
+  }
+
+  initConfig() {
+    dotenv.config({ path: path.join(__dirname, "../.env") });
   }
 
   initMiddlewares() {
@@ -37,6 +43,7 @@ class Server {
 
   initRoutes() {
     this.server.use("/api/contacts", contactsRouter);
+    this.server.use("/users", authRouter);
   }
 
   initErrorHandling() {
@@ -51,8 +58,9 @@ class Server {
   }
 
   async connectToDb() {
+    const { database } = getConfig();
     try {
-      await mongoose.connect(process.env.MONGO_URL);
+      await mongoose.connect(database.url);
       console.log("Database connection successful");
     } catch (err) {
       console.log("Database connection error", err);
@@ -61,8 +69,9 @@ class Server {
   }
 
   listen() {
-    this.server.listen(PORT, () => {
-      console.log(`Server running. Use our API on port: ${PORT}`);
+    const { api } = getConfig();
+    this.server.listen(api.port, () => {
+      console.log(`Server running. Use our API on port: ${api.port}`);
     });
   }
 }
