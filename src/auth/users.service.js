@@ -54,16 +54,8 @@ class AuthService {
     return userNew;
   }
 
-  async getCurrentUser(user) {
-    return user;
-  }
-
   async updateStatusUser(user, updateParams) {
-    console.log(`user`, user.id, updateParams);
     const { id } = user;
-    // if (!("favorite" in updateParams)) {
-    //   throw new BadRequest("Missing field favorite");
-    // }
     const updateStatusUser = await User.findByIdAndUpdate(
       id,
       {

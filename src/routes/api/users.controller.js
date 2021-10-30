@@ -45,7 +45,7 @@ router.post("/logout", authorize(), async (req, res, next) => {
 
 router.get("/current", authorize(), async (req, res, next) => {
   try {
-    const user = await authService.getCurrentUser(req.user);
+    const user = req.user;
     res.status(201).send(serializeUser(user));
   } catch (error) {
     next(error);
