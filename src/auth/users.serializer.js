@@ -12,11 +12,12 @@ exports.serializeUser = (user) => {
   return {
     email: user.email,
     subscription: user.subscription,
+    avatarURL: user.avatarURL,
   };
 };
 
-// exports.deserializeUser = ((id, done) => {
-//   User.findById(id, (err, user) => {
-//     done(err, user);
-//   });
-// });
+exports.serializeUserAvatar = (user) => {
+  return {
+    avatarURL: user.avatarURL,
+  };
+};

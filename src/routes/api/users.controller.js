@@ -1,7 +1,10 @@
 const { Router } = require("express");
-const { authorize } = require("../../auth/users.middleware");
+const { authorize, compressImage } = require("../../auth/users.middleware");
 const { authService } = require("../../auth/users.service");
 const { validate } = require("../../helpers/validate");
+const path = require("path");
+
+const multer = require("multer");
 const {
   signUpSchema,
   signInSchema,
@@ -10,11 +13,26 @@ const {
 const {
   serializeUser,
   serializeUserWithToken,
+  serializeUserAvatar,
 } = require("../../auth/users.serializer");
 
 signUpSchema.validate({}, { stripUnknown: true }); //delete unknown elements
 
 const router = Router();
+const DRAFT_DIR = path.join(__dirname, "../../../tmp");
+const storage = multer.diskStorage({
+  destination: DRAFT_DIR,
+  filename: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new BadRequest("Only images allowed"));
+    }
+    // const ext = path.extname(file.originalname);
+    // cb(null, `${Date.now()}${ext}`);
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
 
 router.post("/signup", validate(signUpSchema), async (req, res, next) => {
   try {
@@ -63,6 +81,24 @@ router.patch(
         req.body
       );
       res.status(200).send(serializeUser(updateStatusUser));
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.patch(
+  "/avatars",
+  authorize(),
+  upload.single("avatar"),
+  compressImage(),
+  async (req, res, next) => {
+    try {
+      const updateAvatarUser = await authService.updateAvatarUser(
+        req.user,
+        req.file
+      );
+      res.status(200).send(serializeUserAvatar(updateAvatarUser));
     } catch (error) {
       next(error);
     }

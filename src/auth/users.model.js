@@ -22,6 +22,7 @@ const UserSchema = new Schema({
     type: String,
     default: null,
   },
+  avatarURL: String,
 });
 UserSchema.plugin(mongoosePaginate);
 

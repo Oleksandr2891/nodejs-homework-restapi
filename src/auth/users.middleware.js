@@ -1,7 +1,12 @@
 const { Unauthorized } = require("http-errors");
+const path = require("path");
+const FsPromises = require("fs").promises;
 const jwt = require("jsonwebtoken");
+const Jimp = require("jimp");
 const { getConfig } = require("../../config");
 const User = require("./users.model");
+
+const STATIC_DIR = path.join(__dirname, "../public/avatars");
 
 exports.authorize = () => {
   return async (req, res, next) => {
@@ -27,5 +32,22 @@ exports.authorize = () => {
       const statusCode = err.status || 401;
       return res.status(statusCode).send();
     }
+  };
+};
+
+exports.compressImage = () => {
+  return async (req, res, next) => {
+    const draftFilePath = req.file.path;
+    const file = await Jimp.read(draftFilePath);
+    const compressedPath = path.join(STATIC_DIR, req.file.filename);
+
+    await file.resize(256, 256).writeAsync(compressedPath);
+
+    await FsPromises.unlink(draftFilePath);
+
+    req.file.destination = STATIC_DIR;
+    req.file.path = compressedPath;
+
+    next();
   };
 };
