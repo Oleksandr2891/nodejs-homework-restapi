@@ -15,7 +15,7 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 dotenv.config();
 
-class Server {
+exports.Server = class {
   constructor() {
     this.server = null;
   }
@@ -23,9 +23,9 @@ class Server {
     this.server = app;
     this.initConfig();
     this.initMiddlewares();
-    this.connectToDb();
+    await this.connectToDb();
     this.initRoutes();
-    this.listen();
+    // this.listen();
     this.initErrorHandling();
   }
 
@@ -77,7 +77,4 @@ class Server {
       console.log(`Server running. Use our API on port: ${api.port}`);
     });
   }
-}
-
-const server = new Server();
-server.start();
+};

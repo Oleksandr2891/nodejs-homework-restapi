@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=production node ./src/bin/server.js",
-    "start:dev": "cross-env NODE_ENV=development nodemon ./src/bin/server.js",
+    "start": "cross-env NODE_ENV=production node ./src/bin/start.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon ./src/bin/start.js",
     "lint": "eslint **/*.js",
-    "lint:fix": "eslint --fix **/*.js"
+    "lint:fix": "eslint --fix **/*.js",
+    "test": "jest"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -37,6 +38,8 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
-    "nodemon": "2.0.7"
+    "jest": "^27.3.1",
+    "nodemon": "2.0.7",
+    "supertest": "^6.1.6"
   }
 }
