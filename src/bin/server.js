@@ -9,11 +9,13 @@ const authRouter = require("../routes/api/users.controller");
 const mongoose = require("mongoose");
 const { getConfig } = require("../../config");
 
+const STATIC_DIR = path.join(__dirname, "../public/avatars");
+
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 dotenv.config();
 
-class Server {
+exports.Server = class {
   constructor() {
     this.server = null;
   }
@@ -21,9 +23,9 @@ class Server {
     this.server = app;
     this.initConfig();
     this.initMiddlewares();
-    this.connectToDb();
+    await this.connectToDb();
     this.initRoutes();
-    this.listen();
+    // this.listen();
     this.initErrorHandling();
   }
 
@@ -32,6 +34,7 @@ class Server {
   }
 
   initMiddlewares() {
+    this.server.use("/avatars", express.static(STATIC_DIR));
     this.server.use(express.json());
     this.server.use(logger(formatsLogger));
     this.server.use(
@@ -74,7 +77,4 @@ class Server {
       console.log(`Server running. Use our API on port: ${api.port}`);
     });
   }
-}
-
-const server = new Server();
-server.start();
+};

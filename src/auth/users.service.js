@@ -2,6 +2,7 @@ const User = require("./users.model");
 const { Conflict, NotFound, Forbidden } = require("http-errors");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+var gravatar = require("gravatar");
 const { getConfig } = require("../../config");
 
 class AuthService {
@@ -11,11 +12,16 @@ class AuthService {
     if (existingUser) {
       throw new Conflict("User with such email already exists");
     }
-
+    const url = gravatar.url(email, {
+      s: "200",
+      r: "pg",
+      d: "mp",
+    });
     const passwordHash = await this.hashPassword(password);
     const newUser = await User.create({
       email,
       password: passwordHash,
+      avatarURL: url,
     });
     return newUser;
   }
@@ -34,11 +40,9 @@ class AuthService {
     }
 
     const token = this.createToken({ sub: user.id });
-    // const params = JSON.stringify({ token });
     await User.findByIdAndUpdate(user.id, {
       $set: { token },
     });
-    console.log(`user`, { user, token });
     return { user, token };
   }
 
@@ -50,7 +54,6 @@ class AuthService {
       },
       { new: true }
     );
-    console.log(`user`, userNew);
     return userNew;
   }
 
@@ -64,6 +67,18 @@ class AuthService {
       { new: true }
     );
     return updateStatusUser;
+  }
+
+  async updateAvatarUser(user, updateParams) {
+    const { id } = user;
+    const updateAvatarUrl = await User.findByIdAndUpdate(
+      id,
+      {
+        $set: { avatarURL: updateParams.path },
+      },
+      { new: true }
+    );
+    return updateAvatarUrl;
   }
 
   async hashPassword(password) {
