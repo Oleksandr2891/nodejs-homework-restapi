@@ -1,8 +1,15 @@
 const User = require("./users.model");
-const { Conflict, NotFound, Forbidden } = require("http-errors");
+const {
+  Conflict,
+  NotFound,
+  Forbidden,
+  PreconditionFailed,
+} = require("http-errors");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 var gravatar = require("gravatar");
+const { mailingClient } = require("../helpers/mailingclient");
+const { v4: uuidv4 } = require("uuid");
 const { getConfig } = require("../../config");
 
 class AuthService {
@@ -22,7 +29,9 @@ class AuthService {
       email,
       password: passwordHash,
       avatarURL: url,
+      verifyToken: uuidv4(),
     });
+    await mailingClient.sendVerificationEmail(email, newUser.verifyToken);
     return newUser;
   }
 
@@ -39,11 +48,39 @@ class AuthService {
       throw new Forbidden("Password is wrong");
     }
 
+    if (user.verify !== true) {
+      throw new PreconditionFailed("User is not verified");
+    }
+
     const token = this.createToken({ sub: user.id });
     await User.findByIdAndUpdate(user.id, {
       $set: { token },
     });
     return { user, token };
+  }
+
+  async verifyUser(verificationToken) {
+    const user = await User.findOne({ verificationToken });
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+    await User.findByIdAndUpdate(user.id, {
+      verify: true,
+      verificationToken: null,
+    });
+  }
+
+  async secondaryVerifyUser(body) {
+    const { email } = body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new NotFound("User not found");
+    }
+    if (user.verify === true) {
+      throw new Forbidden("Verification has already been passed");
+    }
+    await mailingClient.sendVerificationEmail(email);
+    return user;
   }
 
   async logout(user) {

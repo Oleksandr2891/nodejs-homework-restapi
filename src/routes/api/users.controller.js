@@ -9,6 +9,7 @@ const {
   signUpSchema,
   signInSchema,
   updateStatrusUserSchema,
+  secondaryValidateSchema,
 } = require("../../auth/users.schema");
 const {
   serializeUser,
@@ -47,8 +48,8 @@ router.post("/login", validate(signInSchema), async (req, res, next) => {
   try {
     const userWithToken = await authService.signIn(req.body);
     res.status(201).send(serializeUserWithToken(userWithToken));
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -99,6 +100,28 @@ router.patch(
         req.file
       );
       res.status(200).send(serializeUserAvatar(updateAvatarUser));
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  try {
+    await authService.verifyUser(req.params.verificationToken);
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post(
+  "/verify",
+  validate(secondaryValidateSchema),
+  async (req, res, next) => {
+    try {
+      await authService.secondaryVerifyUser(req.body);
+      res.status(200).json({ message: "Verification email sent" });
     } catch (error) {
       next(error);
     }

@@ -16,3 +16,10 @@ exports.updateStatrusUserSchema = Joi.object(
   },
   { stripUnknown: true }
 );
+
+exports.secondaryValidateSchema = Joi.object(
+  {
+    email: Joi.string().email().required(),
+  },
+  { stripUnknown: true }
+);
